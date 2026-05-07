@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LEO — A wallet for modern money</title>
+<link rel="icon" href="../../assets/leo-mark.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<style>
+  html, body { margin: 0; padding: 0; background: var(--leo-bg-deep); }
+  body { overflow-x: hidden; }
+
+  /* ---------- layout primitives ---------- */
+  .leo-container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+  .leo-section { padding: 140px 0; position: relative; }
+
+  /* ---------- nav ---------- */
+  .leo-nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: saturate(140%) blur(14px);
+    background: rgba(4,7,15,0.72);
+    border-bottom: 1px solid var(--leo-divider);
+  }
+  .leo-nav-inner {
+    height: 68px; display: flex; align-items: center; justify-content: space-between;
+    max-width: 1200px; margin: 0 auto; padding: 0 32px;
+  }
+  .leo-brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--leo-font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: var(--leo-fg-1); }
+  .leo-brand-mark { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, var(--leo-cyan-300), var(--leo-cyan-500)); box-shadow: 0 0 0 1px rgba(111,227,255,0.35), inset 0 0 8px rgba(255,255,255,0.25); }
+  .leo-nav-links { display: flex; gap: 34px; font-size: 14px; color: var(--leo-fg-2); }
+  .leo-nav-links a { color: var(--leo-fg-2); font-weight: 500; }
+  .leo-nav-links a:hover { color: var(--leo-fg-1); text-shadow: none; }
+  .leo-nav-right { display: flex; align-items: center; gap: 16px; }
+  .leo-signin { font-size: 14px; font-weight: 500; color: var(--leo-fg-2); }
+
+  /* ---------- buttons ---------- */
+  .leo-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--leo-font-sans); font-weight: 600; font-size: 14px;
+    padding: 10px 18px; border-radius: var(--leo-radius-pill);
+    transition: all 180ms var(--leo-ease-out);
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .leo-btn-primary { background: var(--leo-fg-1); color: var(--leo-navy-950); }
+  .leo-btn-primary:hover { background: var(--leo-cyan-200); text-shadow: none; transform: translateY(-1px); }
+  .leo-btn-ghost { background: transparent; color: var(--leo-fg-1); border-color: var(--leo-border-2); }
+  .leo-btn-ghost:hover { background: rgba(111,227,255,0.06); border-color: rgba(111,227,255,0.4); text-shadow: none; }
+  .leo-btn-lg { padding: 13px 22px; font-size: 15px; }
+  .leo-btn .leo-arr { display: inline-block; transition: transform 200ms var(--leo-ease-out); }
+  .leo-btn:hover .leo-arr { transform: translateX(3px); }
+
+  /* ---------- hero ---------- */
+  .leo-hero { padding: 110px 0 120px; position: relative; overflow: hidden; }
+  .leo-hero-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 900px 500px at 75% 10%, rgba(78,203,255,0.12), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 20% 80%, rgba(78,203,255,0.06), transparent 70%);
+  }
+  .leo-hero-grid {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+    background-image:
+      linear-gradient(to right, rgba(111,227,255,0.06) 1px, transparent 1px);
+    background-size: 96px 100%;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  }
+  .leo-hero-layout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 80px; align-items: center; position: relative; }
+  .leo-pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 14px 6px 6px; border-radius: 999px;
+    background: rgba(111,227,255,0.05); border: 1px solid var(--leo-border);
+    font-size: 13px; color: var(--leo-fg-2); margin-bottom: 28px;
+  }
+  .leo-pill-dot { width: 22px; height: 22px; border-radius: 999px; background: var(--leo-cyan-400); color: var(--leo-navy-950); font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-family: var(--leo-font-display); }
+  .leo-hero h1 {
+    font-family: var(--leo-font-display); font-weight: 700;
+    font-size: clamp(48px, 6.2vw, 84px); line-height: 0.98;
+    letter-spacing: -0.035em; color: var(--leo-fg-1); margin: 0 0 24px;
+  }
+  .leo-hero h1 em { font-style: normal; color: var(--leo-cyan-300); }
+  .leo-hero-sub { font-size: 19px; line-height: 1.5; color: var(--leo-fg-2); max-width: 520px; margin: 0 0 36px; }
+  .leo-hero-cta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .leo-hero-meta { display: flex; align-items: center; gap: 18px; margin-top: 28px; font-size: 13px; color: var(--leo-fg-3); }
+  .leo-hero-meta .dot { width: 4px; height: 4px; border-radius: 999px; background: var(--leo-fg-4); }
+
+  /* product mockup in hero */
+  .leo-hero-visual { position: relative; height: 520px; }
+  .leo-card {
+    position: absolute; width: 360px; border-radius: 22px;
+    background: linear-gradient(160deg, #0D1B3A 0%, #081226 80%);
+    border: 1px solid rgba(111,227,255,0.18);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    padding: 26px; color: var(--leo-fg-1);
+    transition: transform 500ms var(--leo-ease-out);
+  }
+  .leo-card-front { top: 48px; right: 20px; transform: rotate(-3deg); }
+  .leo-card-back  { top: 228px; left: 10px; transform: rotate(4deg); width: 320px; }
+  .leo-hero-visual:hover .leo-card-front { transform: rotate(-3deg) translateY(-6px); }
+  .leo-hero-visual:hover .leo-card-back  { transform: rotate(4deg) translateY(-6px); }
+  .leo-card-chip { width: 36px; height: 28px; border-radius: 5px; background: linear-gradient(135deg, #D9B85C, #8A6F2A); margin-bottom: 42px; }
+  .leo-card-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--leo-fg-3); margin-bottom: 6px; }
+  .leo-card-num { font-family: var(--leo-font-mono); font-size: 18px; letter-spacing: 0.05em; color: var(--leo-fg-1); margin-bottom: 18px; }
+  .leo-card-row { display: flex; justify-content: space-between; align-items: flex-end; }
+  .leo-card-name { font-family: var(--leo-font-display); font-weight: 600; font-size: 14px; }
+  .leo-card-brand { font-family: var(--leo-font-display); font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: var(--leo-cyan-300); }
+
+  .leo-receipt {
+    position: absolute; top: 380px; right: 60px; width: 260px;
+    background: var(--leo-navy-800); border: 1px solid var(--leo-border);
+    border-radius: 14px; padding: 18px 18px 16px; font-size: 13px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .leo-receipt-title { font-family: var(--leo-font-display); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--leo-fg-1); }
+  .leo-check { width: 18px; height: 18px; border-radius: 999px; background: var(--leo-success); color: var(--leo-navy-950); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+  .leo-receipt-row { display: flex; justify-content: space-between; padding: 6px 0; color: var(--leo-fg-2); }
+  .leo-receipt-row span:last-child { color: var(--leo-fg-1); font-family: var(--leo-font-mono); }
+  .leo-receipt-total { border-top: 1px dashed var(--leo-divider); margin-top: 8px; padding-top: 10px; font-weight: 600; color: var(--leo-fg-1); }
+
+  /* ---------- trust logos ---------- */
+  .leo-trust { border-top: 1px solid var(--leo-divider); border-bottom: 1px solid var(--leo-divider); padding: 36px 0; }
+  .leo-trust-label { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--leo-fg-3); text-align: center; margin-bottom: 22px; }
+  .leo-trust-row { display: flex; gap: 56px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .leo-trust-row span { font-family: var(--leo-font-display); font-weight: 600; font-size: 17px; color: var(--leo-fg-3); letter-spacing: -0.01em; opacity: 0.8; transition: opacity 200ms; }
+  .leo-trust-row span:hover { opacity: 1; color: var(--leo-fg-2); }
+
+  /* ---------- section headers ---------- */
+  .leo-section-head { max-width: 720px; margin: 0 auto 72px; text-align: center; }
+  .leo-section-head .leo-eyebrow { display: block; margin-bottom: 16px; }
+  .leo-section-head h2 {
+    font-family: var(--leo-font-display); font-weight: 700;
+    font-size: clamp(32px, 3.8vw, 52px); line-height: 1.05;
+    letter-spacing: -0.025em; color: var(--leo-fg-1); margin: 0 0 16px;
+  }
+  .leo-section-head p { font-size: 18px; color: var(--leo-fg-2); line-height: 1.55; }
+
+  /* ---------- features ---------- */
+  .leo-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--leo-divider); border: 1px solid var(--leo-divider); border-radius: 20px; overflow: hidden; }
+  .leo-feature { background: var(--leo-bg); padding: 40px 36px 44px; display: flex; flex-direction: column; gap: 14px; transition: background 240ms var(--leo-ease-out); }
+  .leo-feature:hover { background: rgba(111,227,255,0.025); }
+  .leo-feature-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(111,227,255,0.08); border: 1px solid var(--leo-border); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .leo-feature-icon img { width: 22px; height: 22px; display: block; }
+  .leo-feature h3 { font-family: var(--leo-font-display); font-weight: 600; font-size: 19px; letter-spacing: -0.01em; color: var(--leo-fg-1); margin: 0; }
+  .leo-feature p { font-size: 15px; line-height: 1.55; color: var(--leo-fg-2); margin: 0; }
+
+  /* ---------- product showcase ---------- */
+  .leo-showcase { background: linear-gradient(180deg, transparent 0%, rgba(111,227,255,0.03) 50%, transparent 100%); }
+  .leo-showcase-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 96px; align-items: center; }
+  .leo-phone {
+    width: 300px; height: 608px; border-radius: 44px;
+    background: linear-gradient(175deg, #0A1222, #04070F);
+    border: 1px solid var(--leo-border-2);
+    padding: 10px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 40px rgba(78,203,255,0.08);
+    margin: 0 auto;
+    position: relative;
+  }
+  .leo-phone-screen { width: 100%; height: 100%; border-radius: 36px; background: #060B16; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .leo-phone-status { display: flex; justify-content: space-between; padding: 16px 26px 8px; font-family: var(--leo-font-display); font-weight: 600; font-size: 14px; color: var(--leo-fg-1); }
+  .leo-phone-status-icons { display: flex; gap: 4px; align-items: center; }
+  .leo-phone-status-icons i { width: 4px; height: 4px; border-radius: 999px; background: var(--leo-fg-1); display: inline-block; }
+  .leo-phone-header { padding: 20px 22px 18px; }
+  .leo-phone-greet { font-size: 13px; color: var(--leo-fg-3); }
+  .leo-phone-name { font-family: var(--leo-font-display); font-weight: 600; font-size: 18px; color: var(--leo-fg-1); }
+  .leo-balance-card { margin: 0 20px; padding: 22px; border-radius: 20px; background: linear-gradient(155deg, rgba(78,203,255,0.22), rgba(78,203,255,0.06)); border: 1px solid var(--leo-border-2); }
+  .leo-balance-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--leo-fg-2); margin-bottom: 8px; }
+  .leo-balance-amt { font-family: var(--leo-font-display); font-weight: 700; font-size: 34px; letter-spacing: -0.02em; color: var(--leo-fg-1); }
+  .leo-balance-delta { font-size: 12px; color: var(--leo-success); margin-top: 6px; }
+  .leo-phone-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 22px 20px 14px; }
+  .leo-phone-action { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border-radius: 12px; }
+  .leo-phone-action-icon { width: 36px; height: 36px; border-radius: 999px; background: rgba(111,227,255,0.08); border: 1px solid var(--leo-border); display: flex; align-items: center; justify-content: center; }
+  .leo-phone-action-icon img { width: 18px; height: 18px; }
+  .leo-phone-action span { font-size: 11px; color: var(--leo-fg-2); }
+  .leo-phone-feed { padding: 8px 20px 16px; }
+  .leo-phone-feed-head { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--leo-fg-3); margin: 10px 0 12px; }
+  .leo-txn { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--leo-divider); }
+  .leo-txn:last-child { border-bottom: 0; }
+  .leo-txn-av { width: 34px; height: 34px; border-radius: 999px; flex: none; overflow: hidden; }
+  .leo-txn-av img { width: 100%; height: 100%; display: block; }
+  .leo-txn-body { flex: 1; min-width: 0; }
+  .leo-txn-name { font-size: 13px; font-weight: 600; color: var(--leo-fg-1); }
+  .leo-txn-meta { font-size: 11px; color: var(--leo-fg-3); }
+  .leo-txn-amt { font-family: var(--leo-font-mono); font-size: 13px; font-weight: 600; color: var(--leo-fg-1); }
+  .leo-txn-amt.pos { color: var(--leo-success); }
+
+  .leo-showcase-copy { max-width: 520px; }
+  .leo-showcase-copy .leo-eyebrow { display: block; margin-bottom: 20px; }
+  .leo-showcase-copy h2 {
+    font-family: var(--leo-font-display); font-weight: 700;
+    font-size: clamp(32px, 3.4vw, 46px); line-height: 1.05;
+    letter-spacing: -0.025em; margin: 0 0 24px;
+  }
+  .leo-bullet-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 22px; }
+  .leo-bullet { display: flex; gap: 16px; align-items: flex-start; }
+  .leo-bullet-icon { width: 28px; height: 28px; border-radius: 999px; background: rgba(58,230,176,0.12); border: 1px solid rgba(58,230,176,0.3); color: var(--leo-success); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: none; }
+  .leo-bullet-body h4 { font-family: var(--leo-font-display); font-weight: 600; font-size: 17px; color: var(--leo-fg-1); margin: 0 0 4px; }
+  .leo-bullet-body p { font-size: 15px; color: var(--leo-fg-2); line-height: 1.5; margin: 0; }
+
+  /* ---------- testimonials ---------- */
+  .leo-voices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .leo-voice { padding: 32px 30px; border: 1px solid var(--leo-divider); border-radius: 18px; background: rgba(111,227,255,0.02); display: flex; flex-direction: column; gap: 24px; transition: border-color 220ms, background 220ms; }
+  .leo-voice:hover { border-color: var(--leo-border-2); background: rgba(111,227,255,0.04); }
+  .leo-voice blockquote { margin: 0; font-family: var(--leo-font-display); font-weight: 500; font-size: 18px; line-height: 1.45; letter-spacing: -0.01em; color: var(--leo-fg-1); }
+  .leo-voice figcaption { display: flex; align-items: center; gap: 12px; margin-top: auto; }
+  .leo-voice figcaption img { width: 40px; height: 40px; border-radius: 999px; display: block; }
+  .leo-voice-name { font-family: var(--leo-font-display); font-weight: 600; font-size: 14px; color: var(--leo-fg-1); line-height: 1.2; }
+  .leo-voice-role { font-size: 12.5px; color: var(--leo-fg-3); margin-top: 2px; }
+
+  /* ---------- cta ---------- */
+  .leo-cta-wrap { text-align: center; max-width: 720px; margin: 0 auto; padding: 104px 0; }
+  .leo-cta-wrap h2 { font-family: var(--leo-font-display); font-weight: 700; font-size: clamp(36px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 24px; }
+  .leo-cta-wrap h2 em { font-style: normal; color: var(--leo-cyan-300); }
+  .leo-cta-wrap p { font-size: 18px; color: var(--leo-fg-2); margin: 0 0 36px; }
+  .leo-cta-stores { display: flex; gap: 12px; justify-content: center; }
+  .leo-cta-stores img { height: 52px; display: block; }
+  .leo-cta-stores a { transition: transform 180ms var(--leo-ease-out); }
+  .leo-cta-stores a:hover { transform: translateY(-2px); }
+
+  /* ---------- footer ---------- */
+  .leo-footer { border-top: 1px solid var(--leo-divider); padding: 64px 0 36px; }
+  .leo-footer-top { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 48px; margin-bottom: 56px; }
+  .leo-footer-brand-copy { color: var(--leo-fg-3); font-size: 14px; max-width: 260px; margin-top: 16px; line-height: 1.55; }
+  .leo-footer-col-title { font-family: var(--leo-font-display); font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--leo-fg-3); margin: 0 0 16px; }
+  .leo-footer-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .leo-footer-col a { color: var(--leo-fg-2); font-size: 14px; }
+  .leo-footer-col a:hover { color: var(--leo-fg-1); text-shadow: none; }
+  .leo-footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; border-top: 1px solid var(--leo-divider); font-size: 13px; color: var(--leo-fg-3); }
+
+  /* ---------- reveal ---------- */
+  .leo-reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--leo-ease-out) var(--d, 0ms), transform 700ms var(--leo-ease-out) var(--d, 0ms); }
+  .leo-reveal.is-in { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    .leo-section { padding: 96px 0; }
+    .leo-hero-layout, .leo-showcase-layout { grid-template-columns: 1fr; gap: 56px; }
+    .leo-hero-visual { height: 520px; order: -1; margin-left: -20px; }
+    .leo-features, .leo-voices { grid-template-columns: 1fr; }
+    .leo-nav-links { display: none; }
+    .leo-footer-top { grid-template-columns: 1fr 1fr; }
+    .leo-trust-row { gap: 28px; }
+  }
+</style>
+</head>
+
+<body class="leo-scope">
+  <div id="leo-root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="react">
+    const ASSETS = '../../assets';
+
+    function Nav() {
+      return (
+        <nav className="leo-nav">
+          <div className="leo-nav-inner">
+            <a href="#" className="leo-brand"><span className="leo-brand-mark"/>LEO</a>
+            <div className="leo-nav-links">
+              <a href="#product">Product</a>
+              <a href="#business">For business</a>
+              <a href="#pricing">Pricing</a>
+              <a href="#company">Company</a>
+            </div>
+            <div className="leo-nav-right">
+              <a href="#signin" className="leo-signin">Sign in</a>
+              <a href="#get" className="leo-btn leo-btn-primary">Get LEO <span className="leo-arr">→</span></a>
+            </div>
+          </div>
+        </nav>
+      );
+    }
+
+    function Hero() {
+      return (
+        <section className="leo-hero">
+          <div className="leo-hero-bg"/>
+          <div className="leo-hero-grid"/>
+          <div className="leo-container">
+            <div className="leo-hero-layout">
+              <div className="leo-reveal is-in">
+                <div className="leo-pill"><span className="leo-pill-dot">·</span> Now with 5.0% APY on every dollar</div>
+                <h1>A wallet for<br/>the way money<br/><em>actually moves.</em></h1>
+                <p className="leo-hero-sub">Send, spend, split, and save — in one quietly beautiful app. Free to start, honest at every turn, and built to last.</p>
+                <div className="leo-hero-cta">
+                  <a href="#get" className="leo-btn leo-btn-primary leo-btn-lg">Get the app <span className="leo-arr">→</span></a>
+                  <a href="#demo" className="leo-btn leo-btn-ghost leo-btn-lg">Watch a 60-second tour</a>
+                </div>
+                <div className="leo-hero-meta">
+                  <span>Free forever for personal use</span><span className="dot"/>
+                  <span>FDIC insured to $250K</span><span className="dot"/>
+                  <span>2 min to open</span>
+                </div>
+              </div>
+              <div className="leo-hero-visual leo-reveal is-in" style={{'--d':'120ms'}}>
+                <div className="leo-card leo-card-back">
+                  <div className="leo-card-chip"/>
+                  <div className="leo-card-label">Savings · 5.00% APY</div>
+                  <div className="leo-card-num">•• •• •• 4412</div>
+                  <div className="leo-card-row"><div className="leo-card-name">Maya Chen</div><div className="leo-card-brand">LEO</div></div>
+                </div>
+                <div className="leo-card leo-card-front">
+                  <div className="leo-card-chip"/>
+                  <div className="leo-card-label">Spend · Cashback enabled</div>
+                  <div className="leo-card-num">4821 ••• ••• 0193</div>
+                  <div className="leo-card-row"><div className="leo-card-name">Maya Chen</div><div className="leo-card-brand">LEO</div></div>
+                </div>
+                <div className="leo-receipt">
+                  <div className="leo-receipt-title"><span className="leo-check">✓</span>Payment sent</div>
+                  <div className="leo-receipt-row"><span>To</span><span>@jordan</span></div>
+                  <div className="leo-receipt-row"><span>Memo</span><span>Dinner, split</span></div>
+                  <div className="leo-receipt-row leo-receipt-total"><span>Amount</span><span>$24.50</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Trust() {
+      const logos = ['FORBES', 'TECHCRUNCH', 'BLOOMBERG', 'WIRED', 'THE VERGE', 'FORTUNE'];
+      return (
+        <section className="leo-trust">
+          <div className="leo-container">
+            <div className="leo-trust-label">Trusted & covered by</div>
+            <div className="leo-trust-row">{logos.map(l => <span key={l}>{l}</span>)}</div>
+          </div>
+        </section>
+      );
+    }
+
+    const FEATURES = [
+      { icon: 'icon-send.svg',     title: 'Pay anyone, instantly',  body: 'Free transfers in 180+ countries. A phone number or a @handle is all it takes — money lands in seconds.' },
+      { icon: 'icon-card.svg',     title: 'The card that gives back', body: 'Up to 3% cashback on everyday spend. Virtual cards on demand. No foreign transaction fees, ever.' },
+      { icon: 'icon-split.svg',    title: 'Split anything, fairly', body: 'Bills, rent, a weekend away — divided down to the cent. LEO nudges the stragglers so you don’t.' },
+      { icon: 'icon-grow.svg',     title: 'Save. Invest. Earn.',    body: '5.0% APY on balances. Round-up investing. Stocks, bonds, and crypto under one quiet roof.' },
+      { icon: 'icon-business.svg', title: 'Get paid from anywhere', body: 'Checkout links, invoices, and a built-in POS. Payouts hit your account the same business day.' },
+      { icon: 'icon-protect.svg',  title: 'Security you can feel',  body: 'FDIC insured to $250K. Biometric login. Reverse any payment within 60 seconds if something feels off.' },
+    ];
+
+    function Features() {
+      return (
+        <section id="product" className="leo-section">
+          <div className="leo-container">
+            <div className="leo-section-head leo-reveal">
+              <span className="leo-eyebrow">Everything, quietly</span>
+              <h2>One wallet. All of your money.</h2>
+              <p>No seven apps, no hidden fees, no color-blast interfaces. Just the tools you use most, thought through with care.</p>
+            </div>
+            <div className="leo-features leo-reveal">
+              {FEATURES.map((f, i) => (
+                <div key={i} className="leo-feature">
+                  <div className="leo-feature-icon"><img src={`${ASSETS}/${f.icon}`} alt=""/></div>
+                  <h3>{f.title}</h3>
+                  <p>{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Showcase() {
+      return (
+        <section className="leo-section leo-showcase">
+          <div className="leo-container">
+            <div className="leo-showcase-layout">
+              <div className="leo-reveal">
+                <div className="leo-phone">
+                  <div className="leo-phone-screen">
+                    <div className="leo-phone-status">
+                      <span>9:41</span>
+                      <div className="leo-phone-status-icons"><i/><i/><i/><i style={{background:'var(--leo-fg-3)'}}/></div>
+                    </div>
+                    <div className="leo-phone-header">
+                      <div className="leo-phone-greet">Good morning,</div>
+                      <div className="leo-phone-name">Maya</div>
+                    </div>
+                    <div className="leo-balance-card">
+                      <div className="leo-balance-label">Available balance</div>
+                      <div className="leo-balance-amt">$12,480.22</div>
+                      <div className="leo-balance-delta">+ $64.18 interest this month</div>
+                    </div>
+                    <div className="leo-phone-actions">
+                      {[
+                        {i:'icon-send.svg',     l:'Send'},
+                        {i:'icon-card.svg',     l:'Spend'},
+                        {i:'icon-split.svg',    l:'Split'},
+                        {i:'icon-grow.svg',     l:'Invest'},
+                      ].map(a => (
+                        <div key={a.l} className="leo-phone-action">
+                          <div className="leo-phone-action-icon"><img src={`${ASSETS}/${a.i}`} alt=""/></div>
+                          <span>{a.l}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="leo-phone-feed">
+                      <div className="leo-phone-feed-head">Today</div>
+                      <div className="leo-txn">
+                        <div className="leo-txn-av"><img src={`${ASSETS}/avatar-jordan.svg`} alt=""/></div>
+                        <div className="leo-txn-body">
+                          <div className="leo-txn-name">Jordan Reyes</div>
+                          <div className="leo-txn-meta">Dinner, split · 12:04 pm</div>
+                        </div>
+                        <div className="leo-txn-amt pos">+ $24.50</div>
+                      </div>
+                      <div className="leo-txn">
+                        <div className="leo-txn-av" style={{background:'#1F2A44',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--leo-font-display)',fontWeight:700,fontSize:13,color:'var(--leo-fg-1)'}}>BL</div>
+                        <div className="leo-txn-body">
+                          <div className="leo-txn-name">Blue Bottle Coffee</div>
+                          <div className="leo-txn-meta">Ferry Building · 8:22 am</div>
+                        </div>
+                        <div className="leo-txn-amt">- $5.75</div>
+                      </div>
+                      <div className="leo-txn">
+                        <div className="leo-txn-av"><img src={`${ASSETS}/avatar-sana.svg`} alt=""/></div>
+                        <div className="leo-txn-body">
+                          <div className="leo-txn-name">Sana Park</div>
+                          <div className="leo-txn-meta">Rent · Apr 1</div>
+                        </div>
+                        <div className="leo-txn-amt pos">+ $1,200.00</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="leo-showcase-copy leo-reveal" style={{'--d':'120ms'}}>
+                <span className="leo-eyebrow">Home screen, redesigned</span>
+                <h2>Your money, at a glance.</h2>
+                <ul className="leo-bullet-list">
+                  <li className="leo-bullet">
+                    <div className="leo-bullet-icon">✓</div>
+                    <div className="leo-bullet-body">
+                      <h4>One number that matters</h4>
+                      <p>Your real balance — after pending charges, before the anxiety.</p>
+                    </div>
+                  </li>
+                  <li className="leo-bullet">
+                    <div className="leo-bullet-icon">✓</div>
+                    <div className="leo-bullet-body">
+                      <h4>Four taps to anything</h4>
+                      <p>Send, spend, split, invest — the things you actually do, up top where you expect them.</p>
+                    </div>
+                  </li>
+                  <li className="leo-bullet">
+                    <div className="leo-bullet-icon">✓</div>
+                    <div className="leo-bullet-body">
+                      <h4>A feed that reads like a diary</h4>
+                      <p>Every transaction with who, where, and why. Search in plain English, tag on the fly.</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    const VOICES = [
+      { a: 'avatar-maya.svg',   n: 'Maya Chen',    r: 'Freelance designer',   q: 'My clients pay me from six countries. With LEO, money lands the same day — no wire fees, no waiting.' },
+      { a: 'avatar-jordan.svg', n: 'Jordan Reyes', r: 'Coffee-shop owner',    q: 'Checkout link, QR at the counter, payouts Monday morning. LEO replaced three tools and a point-of-sale.' },
+      { a: 'avatar-sana.svg',   n: 'Sana Park',    r: 'Grad student',         q: 'Split rent with three roommates, auto-save the rest, earn 5% on what’s left. Finally, a wallet that does the math.' },
+    ];
+
+    function Voices() {
+      return (
+        <section className="leo-section" style={{paddingTop: 0}}>
+          <div className="leo-container">
+            <div className="leo-section-head leo-reveal">
+              <span className="leo-eyebrow">Real people · Real money</span>
+              <h2>Built for the way you actually live.</h2>
+            </div>
+            <div className="leo-voices">
+              {VOICES.map((v, i) => (
+                <figure key={i} className="leo-voice leo-reveal" style={{'--d': `${i*100}ms`}}>
+                  <blockquote>&ldquo;{v.q}&rdquo;</blockquote>
+                  <figcaption>
+                    <img src={`${ASSETS}/${v.a}`} alt=""/>
+                    <div>
+                      <div className="leo-voice-name">{v.n}</div>
+                      <div className="leo-voice-role">{v.r}</div>
+                    </div>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function CTA() {
+      return (
+        <section>
+          <div className="leo-container">
+            <div className="leo-cta-wrap leo-reveal">
+              <h2>Move money like <em>you mean it.</em></h2>
+              <p>Two minutes to open an account. No paperwork, no fine print surprises.</p>
+              <div className="leo-cta-stores">
+                <a href="#ios"><img src={`${ASSETS}/appstore-badge.svg`} alt="Download on the App Store"/></a>
+                <a href="#android"><img src={`${ASSETS}/playstore-badge.svg`} alt="Get it on Google Play"/></a>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="leo-footer">
+          <div className="leo-container">
+            <div className="leo-footer-top">
+              <div>
+                <div className="leo-brand"><span className="leo-brand-mark"/>LEO</div>
+                <p className="leo-footer-brand-copy">A wallet for modern money. Built in Brooklyn, trusted in 180+ countries.</p>
+              </div>
+              <div className="leo-footer-col">
+                <div className="leo-footer-col-title">Product</div>
+                <ul><li><a href="#">Personal</a></li><li><a href="#">Business</a></li><li><a href="#">Card</a></li><li><a href="#">Savings</a></li></ul>
+              </div>
+              <div className="leo-footer-col">
+                <div className="leo-footer-col-title">Company</div>
+                <ul><li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Security</a></li></ul>
+              </div>
+              <div className="leo-footer-col">
+                <div className="leo-footer-col-title">Resources</div>
+                <ul><li><a href="#">Help center</a></li><li><a href="#">Status</a></li><li><a href="#">Developers</a></li><li><a href="#">Legal</a></li></ul>
+              </div>
+            </div>
+            <div className="leo-footer-bottom">
+              <div>© 2026 LEO Financial, Inc. Member FDIC.</div>
+              <div>Made with care in Brooklyn, NY</div>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    function App() {
+      return (<>
+        <Nav/><Hero/><Trust/><Features/><Showcase/><Voices/><CTA/><Footer/>
+      </>);
+    }
+
+    ReactDOM.createRoot(document.getElementById('leo-root')).render(<App/>);
+
+    // reveal on scroll
+    requestAnimationFrame(() => {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }});
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.leo-reveal').forEach(el => io.observe(el));
+    });
+  </script>
+</body>
+</html>

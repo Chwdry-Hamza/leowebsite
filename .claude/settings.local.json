@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"c:\\\\Users\\\\Sparta Laptop Store\\\\Desktop\\\\leowebsite\\\\public\\\\mobilePayment.png\"\\); \"size: $\\($img.Width\\)x$\\($img.Height\\) | format: $\\($img.PixelFormat\\)\"; $img.Dispose\\(\\))",
+      "PowerShell(Copy-Item \"c:\\\\Users\\\\Sparta Laptop Store\\\\Desktop\\\\leowebsite\\\\public\\\\mobilePayment.png\" \"c:\\\\Users\\\\Sparta Laptop Store\\\\Desktop\\\\leowebsite\\\\public\\\\mobilePayment.original.png\" -Force)",
+      "PowerShell(\"Backup created.\")",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"c:\\\\Users\\\\Sparta Laptop Store\\\\Desktop\\\\leowebsite\\\\public\\\\mobilePayment.png\"\\); \"format: $\\($img.PixelFormat\\) | size: $\\($img.Width\\)x$\\($img.Height\\)\"; $img.Dispose\\(\\))"
+    ]
+  }
+}
