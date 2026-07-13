@@ -34,6 +34,13 @@ module.exports = {
         warning: '#FFCE5C',
         danger:  '#FF5E87',
         magenta: '#C66BFF',
+        // Panel/border tokens used across the site (cards, inputs, dividers,
+        // dropdowns). Solid hex so Tailwind opacity modifiers (e.g. bg-surface/40,
+        // border-line/40) still resolve. Without these, `bg-surface`/`border-line`
+        // don't generate and elements fall back to white bg / currentColor borders.
+        surface:          '#0E1830', // panel bg (slightly lighter than page #0a1527)
+        'surface-deeper': '#0A1222', // deeper panel (dropdowns/overlays)
+        line:             '#1C2C4E', // subtle borders + dividers
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'system-ui', '-apple-system', 'sans-serif'],

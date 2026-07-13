@@ -18,7 +18,7 @@ export default function AboutSections({ initialContent }: { initialContent: Abou
   return (
     <div ref={rootRef}>
       {/* Hero */}
-      <section className="relative overflow-hidden pt-16 sm:pt-20 bg-[#0a1527]">
+      <section className="relative overflow-hidden pt-6 sm:pt-8 bg-[#0a1527]">
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
           <div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[70%] blur-3xl"
@@ -26,7 +26,7 @@ export default function AboutSections({ initialContent }: { initialContent: Abou
           />
         </div>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-8 md:pt-24 pb-16">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-2 md:pt-8 pb-16">
           <h1 className="font-display font-bold text-4xl md:text-6xl mb-6 md:mb-10 tracking-[-0.02em]">
             <span className="text-white" data-cms-field="hero.headingWhite">{hero.headingWhite}</span>{' '}
             <span className="text-cyan-300" data-cms-field="hero.headingAccent">{hero.headingAccent}</span>

@@ -69,20 +69,25 @@ export async function buildMetadataFromCMS(
   const site = await cms.getSetting<SiteSeoDefaults>('seo');
   const seo = doc.seo ?? ({} as CMSPage['seo']);
 
-  // Title: use exactly what's set in the SEO title field (verbatim — rendered
-  // as `absolute` so the layout's "%s | Brand" template is NOT applied). Falls
-  // back to the page title, then any per-page default.
+  // Title: a per-page SEO title is rendered EXACTLY (title.absolute), bypassing
+  // the site-wide "Default title template". WITHOUT a custom SEO title we return
+  // a plain string (the page title) so the root layout's title template wraps it
+  // — that's how the CMS "Default title template" applies to untitled documents.
+  const customTitle = seo.title?.trim();
   const titleText =
-    seo.title?.trim() ||
+    customTitle ||
     doc.title?.trim() ||
     (typeof defaults.title === 'string' ? defaults.title : undefined);
 
-  // Description: page SEO description → excerpt → site-wide Default meta
-  // description (CMS → SEO Settings) → per-page default.
+  // Description precedence: the page's own SEO description → the site-wide
+  // "Default meta description" (CMS → SEO Settings) → the page excerpt → any
+  // per-page built-in default. The site default sits ABOVE the excerpt so the
+  // default you set in the CMS applies to EVERY page/post (static, CMS, blog)
+  // that has no explicit SEO description of its own.
   const description =
     seo.description?.trim() ||
-    doc.excerpt?.trim() ||
     site?.defaultDescription?.trim() ||
+    doc.excerpt?.trim() ||
     (typeof defaults.description === 'string' ? defaults.description : undefined);
 
   // Resolve images with fallbacks (incl. the site-wide Default OG image setting)
@@ -96,7 +101,7 @@ export async function buildMetadataFromCMS(
 
   return {
     ...defaults,
-    title: titleText ? { absolute: titleText } : defaults.title,
+    title: customTitle ? { absolute: customTitle } : (titleText ?? defaults.title),
     description,
     alternates: { canonical },
     robots: {
@@ -147,10 +152,15 @@ export async function buildListingMetadata({
   defaults?: Metadata;
 }): Promise<Metadata> {
   const site = await cms.getSetting<SiteSeoDefaults>('seo');
+  // A per-listing custom SEO title is rendered exactly (title.absolute); without
+  // one, the base title is a plain string so the layout's title template wraps it.
+  const exactTitle = Boolean(seo?.title?.trim());
   const titleText = seo?.title
     ? (page > 1 ? `${seo.title} — Page ${page}` : seo.title)
     : (page > 1 ? `${baseTitle} — Page ${page} of ${totalPages}` : baseTitle);
-  const description = seo?.description?.trim() || baseDescription?.trim() || site?.defaultDescription?.trim() || undefined;
+  // Site-wide default applies above the per-listing base description so the CMS
+  // "Default meta description" reaches listing pages (blog, category, tag) too.
+  const description = seo?.description?.trim() || site?.defaultDescription?.trim() || baseDescription?.trim() || undefined;
 
   const canonical = page > 1 ? canonicalUrl(basePath, `?page=${page}`) : canonicalUrl(basePath);
 
@@ -159,8 +169,9 @@ export async function buildListingMetadata({
 
   return {
     ...defaults,
-    // Verbatim title (absolute) — no "%s | Brand" template wrapping.
-    title: { absolute: titleText },
+    // Custom SEO title → absolute (no template); otherwise plain so the layout's
+    // "Default title template" wraps it.
+    title: exactTitle ? { absolute: titleText } : titleText,
     description,
     alternates: { canonical },
     robots: {

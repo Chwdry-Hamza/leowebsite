@@ -16,7 +16,7 @@ export default function BlogSearchBar({ defaultValue = '' }: { defaultValue?: st
         placeholder="Search posts and pages…"
         aria-label="Search posts and pages"
         autoComplete="off"
-        className="flex-1 rounded-leo-md px-4 py-3 text-base text-fg-1 outline-none border border-line bg-surface/40 focus:border-cyan-300/50 transition-colors"
+        className="flex-1 rounded-leo-md px-4 py-3 text-base text-fg-1 placeholder:text-fg-3 outline-none border border-white/10 bg-navy-800 focus:border-cyan-300/50 transition-colors"
       />
       <button
         type="submit"

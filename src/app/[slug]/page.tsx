@@ -71,8 +71,6 @@ export default async function CMSPage({ params }: { params: Promise<RouteParams>
   const perf = page.performance;
   if (perf?.disableCache) noStore();
 
-  const updated = page.updatedAt ? new Date(page.updatedAt) : null;
-
   const org = await cms.getSetting<Organization>('organization');
   const pageLd = await buildPageLevelSchema(page, org ?? undefined);
 
@@ -94,22 +92,11 @@ export default async function CMSPage({ params }: { params: Promise<RouteParams>
           <div className="mb-6">
             <Breadcrumbs items={[{ label: page.title }]} />
           </div>
-          <p className="font-display text-xs font-medium tracking-[0.28em] uppercase text-[#B8C8E2] mb-[22px]">
-            {page.template || 'Page'}
-          </p>
           <h1 className="font-display font-bold text-[clamp(36px,5vw,68px)] leading-[1.05] tracking-[-0.02em] text-white m-0 mb-6">
             {page.title}
           </h1>
           {page.excerpt && (
             <p className="text-[15px] md:text-[17px] leading-[1.6] text-fg-2 max-w-2xl mb-6">{page.excerpt}</p>
-          )}
-          {updated && (
-            <p className="text-xs text-fg-4">
-              Last updated{' '}
-              <time dateTime={updated.toISOString()}>
-                {updated.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </time>
-            </p>
           )}
         </div>
       </section>

@@ -76,7 +76,7 @@ export default function SupportSections({ initialContent }: { initialContent: Su
 
   return (
     <div ref={rootRef}>
-      <section className="relative overflow-hidden pt-16 sm:pt-20 bg-[#0a1527]">
+      <section className="relative overflow-hidden pt-6 sm:pt-8 bg-[#0a1527]">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div
             className="absolute left-1/2 top-32 -translate-x-1/2 w-[80%] h-[60%] blur-3xl"
@@ -84,7 +84,7 @@ export default function SupportSections({ initialContent }: { initialContent: Su
           />
         </div>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-8 md:pt-24 pb-16">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-2 md:pt-8 pb-16">
           {/* Header */}
           <div className="text-center mb-14 md:mb-20">
             <p

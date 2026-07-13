@@ -81,13 +81,18 @@ function renderNode(node: Node, key: React.Key): React.ReactNode {
     case 'table':
       return (
         <div key={key} className="my-6 overflow-x-auto">
-          <table className="w-full border-collapse rounded-leo-md overflow-hidden border border-line">
-            <tbody>{node.content?.map((n, i) => renderNode(n, i))}</tbody>
-          </table>
+          {/* White outer frame lives on this wrapper — a border-collapse table
+              clips its own outer border under overflow-hidden, so the frame must
+              sit on a non-collapse element. */}
+          <div className="inline-block min-w-full overflow-hidden rounded-leo-md border border-white/70">
+            <table className="w-full border-collapse">
+              <tbody>{node.content?.map((n, i) => renderNode(n, i))}</tbody>
+            </table>
+          </div>
         </div>
       );
     case 'tableRow':
-      return <tr key={key} className="border-b border-line last:border-b-0">{node.content?.map((n, i) => renderNode(n, i))}</tr>;
+      return <tr key={key} className="border-b border-white/30 last:border-b-0">{node.content?.map((n, i) => renderNode(n, i))}</tr>;
     case 'tableHeader': {
       const colspan = node.attrs?.colspan;
       const rowspan = node.attrs?.rowspan;
@@ -96,7 +101,7 @@ function renderNode(node: Node, key: React.Key): React.ReactNode {
           key={key}
           colSpan={colspan}
           rowSpan={rowspan}
-          className="border border-line bg-cyan-300/[0.04] text-left px-3 py-2 text-sm font-semibold text-fg-1"
+          className="border border-white/30 bg-cyan-300/[0.04] text-left px-3 py-2 text-sm font-semibold text-fg-1"
         >
           {node.content?.map((n, i) => renderNode(n, i))}
         </th>
@@ -110,7 +115,7 @@ function renderNode(node: Node, key: React.Key): React.ReactNode {
           key={key}
           colSpan={colspan}
           rowSpan={rowspan}
-          className="border border-line px-3 py-2 text-sm text-fg-2 align-top"
+          className="border border-white/30 px-3 py-2 text-sm text-fg-2 align-top"
         >
           {node.content?.map((n, i) => renderNode(n, i))}
         </td>

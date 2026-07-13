@@ -34,11 +34,41 @@ export async function generateMetadata(): Promise<Metadata> {
   // unreachable the page still renders with DEFAULT_META.
   const home = await cms.getRouteSeoPage('/', HOME_TITLE, 'Landing');
   if (!home) return DEFAULT_META;
+  const site = await cms.getSetting<{ siteName?: string; titleTemplate?: string; defaultDescription?: string }>('seo');
   const meta = await buildMetadataFromCMS(home, '/', DEFAULT_META);
-  // Home title shouldn't be wrapped by the layout's "%s | Leo" template, and
-  // shouldn't fall back to the generic auto-registration title — use the
-  // editor's Home SEO title if set, else the brand line.
-  meta.title = { absolute: home?.seo?.title?.trim() || HOME_TITLE };
+
+  // Title precedence (fix: a title set in SEO settings wasn't showing on the
+  // homepage). The homepage's own SEO title (page editor) wins; otherwise the
+  // site-wide "Title template" from SEO settings is applied to the fallback
+  // ({title} placeholder, or used verbatim when the template is a literal);
+  // otherwise the fallback. The fallback is the CMS "Site name" (SEO Settings)
+  // so a configured Site name takes effect on the homepage, else the brand line.
+  // Emitted absolute so the layout's "%s | Brand" template never wraps it.
+  const fallbackTitle = site?.siteName?.trim() || HOME_TITLE;
+  const rawTemplate = site?.titleTemplate?.trim();
+  const templatedTitle = rawTemplate
+    ? rawTemplate.includes('{title}')
+      ? rawTemplate.replace('{title}', fallbackTitle)
+      : rawTemplate
+    : fallbackTitle;
+  meta.title = { absolute: home?.seo?.title?.trim() || templatedTitle };
+
+  // Description precedence (fix: the Default meta description from SEO settings
+  // wasn't showing on the homepage). The homepage is edited via the Home editor,
+  // which has no excerpt field, so the seeded auto-registration excerpt would
+  // invisibly shadow the site-wide default in buildMetadataFromCMS. Resolve it
+  // here from the homepage's own SEO description → SEO-settings default → built-in.
+  const description =
+    home?.seo?.description?.trim() ||
+    site?.defaultDescription?.trim() ||
+    (typeof DEFAULT_META.description === 'string' ? DEFAULT_META.description : undefined);
+  meta.description = description;
+  if (meta.openGraph && !home?.seo?.og?.description) {
+    (meta.openGraph as { description?: string }).description = description;
+  }
+  if (meta.twitter && !home?.seo?.twitter?.description) {
+    (meta.twitter as { description?: string }).description = description;
+  }
   return meta;
 }
 

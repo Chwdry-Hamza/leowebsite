@@ -2,9 +2,19 @@
 
 import { useSyncExternalStore } from 'react';
 
-export const COOKIE_CONSENT_STORAGE_KEY = 'leo-cookie-consent';
-export const COOKIE_CONSENT_COOKIE_NAME = 'leo_cookie_consent';
-export const COOKIE_CONSENT_EVENT = 'leo-consent-change';
+// Re-exported from a plain module so both client and server can import them
+// (see src/lib/consent.ts for why these must not live in a 'use client' file).
+export {
+  COOKIE_CONSENT_STORAGE_KEY,
+  COOKIE_CONSENT_COOKIE_NAME,
+  COOKIE_CONSENT_EVENT,
+} from '@/lib/consent';
+import {
+  COOKIE_CONSENT_STORAGE_KEY,
+  COOKIE_CONSENT_COOKIE_NAME,
+  COOKIE_CONSENT_EVENT,
+} from '@/lib/consent';
+
 const SSR_SENTINEL = '__ssr__';
 
 export type ConsentChoice = 'accepted' | 'declined';

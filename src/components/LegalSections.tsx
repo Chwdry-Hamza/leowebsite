@@ -97,8 +97,8 @@ export default function LegalSections({
 
   return (
     <div ref={rootRef}>
-      <section className="relative overflow-hidden pt-16 sm:pt-20 bg-[#0a1527]">
-        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 pt-8 md:pt-24 pb-16">
+      <section className="relative overflow-hidden pt-6 sm:pt-8 bg-[#0a1527]">
+        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 pt-2 md:pt-8 pb-16">
           <h1 className="font-display font-bold text-4xl md:text-6xl mb-4 tracking-[-0.02em]">
             <span className="text-white" data-cms-field="header.white">{header.white}</span>{' '}
             <span style={{ color: LINK }} data-cms-field="header.accent">{header.accent}</span>
