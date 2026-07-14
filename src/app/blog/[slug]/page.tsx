@@ -74,7 +74,7 @@ export default async function BlogPostPage({ params }: { params: Promise<RoutePa
 
   return (
     <main className="bg-[#0a1527] min-h-screen overflow-x-hidden">
-      <CodeInjection code={post?.codeInjection} slots={['header', 'body']} />
+      <CodeInjection code={post?.codeInjection} slots={['body']} />
       <NavBar />
 
       <script

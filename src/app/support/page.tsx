@@ -28,7 +28,7 @@ export default async function SupportPage() {
 
   return (
     <main className="bg-[#0a1527] min-h-screen overflow-x-hidden">
-      <CodeInjection code={page?.codeInjection} slots={['header', 'body']} />
+      <CodeInjection code={page?.codeInjection} slots={['body']} />
       <NavBar />
       <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 pt-16">
         <Breadcrumbs items={[{ label: 'Support' }]} />

@@ -84,7 +84,7 @@ export default async function Page() {
 
   return (
     <>
-      <CodeInjection code={home?.codeInjection} slots={['header', 'body']} />
+      <CodeInjection code={home?.codeInjection} slots={['body']} />
       <NavBar content={initialContent.navBar} />
       <HomeSections
         initialContent={initialContent}

@@ -76,7 +76,7 @@ export default async function CMSPage({ params }: { params: Promise<RouteParams>
 
   return (
     <main className="bg-[#0a1527] min-h-screen overflow-x-hidden">
-      <CodeInjection code={page?.codeInjection} slots={['header', 'body']} />
+      <CodeInjection code={page?.codeInjection} slots={['body']} />
       <NavBar />
 
       {pageLd ? (

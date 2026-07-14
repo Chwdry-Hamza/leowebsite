@@ -55,6 +55,58 @@ const headerParseOptions: HTMLReactParserOptions = {
   },
 };
 
+/**
+ * Split a Header-slot HTML string into its INLINE scripts (no `src`) and the
+ * remaining markup. React 19 only keeps an inline <script> inside <head> when it
+ * is rendered as a DIRECT JSX child of a real <head> element — inline scripts
+ * produced by html-react-parser (or wrapped in a fragment) are dropped from
+ * <head>. So the layout renders these inline-script bodies itself, as direct
+ * <head> children, and passes `rest` (meta / link / external scripts) through
+ * the parser (React hoists <meta>/<link>).
+ */
+export function splitHeaderInjection(html: string): {
+  inlineScripts: string[];
+  rest: string;
+} {
+  const inlineScripts: string[] = [];
+  const rest = (html ?? '')
+    .replace(
+      /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi,
+      (_full, body: string) => {
+        if (body.trim()) inlineScripts.push(body);
+        return '';
+      }
+    )
+    // Collapse the whitespace that surrounded the removed scripts. A stray
+    // whitespace text node is INVALID as a direct child of <head> and triggers a
+    // React hydration error, so `rest` must contain only element tags.
+    .replace(/>\s+</g, '><')
+    .trim();
+  return { inlineScripts, rest };
+}
+
+/**
+ * Header-slot markup MINUS inline scripts (meta / link / external scripts).
+ * Rendered inside the root layout's real <head>; React hoists <meta>/<link>.
+ * Whitespace-only text nodes are dropped — they are invalid children of <head>.
+ */
+export function HeaderInjectionNodes({ html }: { html: string }) {
+  if (!html?.trim()) return null;
+  const parsed = parse(html, headerParseOptions);
+  const nodes = (Array.isArray(parsed) ? parsed : [parsed]) as React.ReactNode[];
+  return (
+    <>
+      {nodes
+        .filter((n) => typeof n !== 'string' || n.trim() !== '')
+        .map((n, i) =>
+          React.isValidElement(n)
+            ? React.cloneElement(n, { key: n.key ?? `hdr-node-${i}` })
+            : n
+        )}
+    </>
+  );
+}
+
 /** header: real elements; React 19 hoists metadata + async scripts into <head>. */
 function HeadHtml({ html }: { html: string }) {
   if (!html?.trim()) return null;

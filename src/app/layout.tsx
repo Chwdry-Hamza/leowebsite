@@ -4,10 +4,11 @@ import './globals.css';
 import ClientEffects from '../components/ClientEffects';
 import CookieConsent from '../components/CookieConsent';
 import AutoRefresh from '../components/AutoRefresh';
-import { cms, type CmsCodeInjection } from '@/lib/cms';
+import { headers } from 'next/headers';
+import { cms, getPathHeaderInjection, type CmsCodeInjection } from '@/lib/cms';
 import { buildOrganizationJsonLd, type Organization } from '@/lib/structured-data';
 import { serializeJsonLd } from '@/lib/sanitize';
-import CodeInjection from '../components/CodeInjection';
+import CodeInjection, { HeaderInjectionNodes, splitHeaderInjection } from '../components/CodeInjection';
 import ConsentedAnalytics from '../components/ConsentedAnalytics';
 
 /**
@@ -145,8 +146,30 @@ export default async function RootLayout({
   // into <head> for every user agent, including plain browsers doing View Source.
   const gscToken = searchConsoleToken(siteSeo ?? null);
 
+  // Header code injection rendered inside <head>: the site-wide snippet (SEO
+  // Settings → Code → Header) plus the CURRENT page's per-page header snippet.
+  // Both go here because a page component (mounted in <body>) cannot inject a
+  // <script> into <head>. The pathname comes from the middleware-set header.
+  // Inline scripts are merged into one <script> rendered as a direct <head>
+  // child (so they land literally in <head> and run synchronously); the rest
+  // (meta / link / external scripts) goes through the parser.
+  const pathname =
+    (await headers()).get('x-leo-original-path')?.split('?')[0] ?? '/';
+  const perPageHeader = await getPathHeaderInjection(pathname);
+  const combinedHeader = [globalCode?.header ?? '', perPageHeader]
+    .filter((s) => s.trim())
+    .join('\n');
+  const { inlineScripts: headerInlineScripts, rest: headerRest } =
+    splitHeaderInjection(combinedHeader);
+
   return (
     <html lang={langOf(siteSeo?.defaultLocale)} className={spaceGrotesk.variable}>
+      <head>
+        {headerInlineScripts.length > 0 && (
+          <script dangerouslySetInnerHTML={{ __html: headerInlineScripts.join('\n') }} />
+        )}
+        <HeaderInjectionNodes html={headerRest} />
+      </head>
       <body>
         {/* Google Search Console verification — React hoists this <meta> into
             <head> so it is present in View Source on every route. */}
@@ -168,8 +191,9 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(orgJsonLd) }}
           />
         )}
-        {/* Site-wide code injection: header → <head>, body at top of <body>. */}
-        <CodeInjection code={globalCode} slots={['header', 'body']} />
+        {/* Site-wide code injection: header is rendered in <head> above; here
+            only the body slot (top of <body>). */}
+        <CodeInjection code={globalCode} slots={['body']} />
         <div className="App leo-scope">
           <ClientEffects />
           <AutoRefresh />
